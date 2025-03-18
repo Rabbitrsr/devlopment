@@ -2,11 +2,23 @@ const colors = {
   primaryGradientStart: 'skyblue',
   primaryGradientEnd: '#1e3c72',
   inputBackground: 'rgba(255, 255, 255, 0.15)',
-  iconColor: '#cccccc',
-  placeholder: '#ccc',
-  textWhite: '#ffffff',
-  buttonBackground: '#4caf50',
-  linkText: '#ffffff',
+  iconColor: 'white',
+  placeholder: 'white',
+  textWhite: 'white',
+  buttonBackground: 'limegreen',
+  linkText: 'white',
+  
+  // Additions for screens you're planning:
+  background: '#f5f7fa',
+  cardBackground: '#ffffff',
+  border: '#e0e0e0',
+  textPrimary: '#333333',
+  textSecondary: '#7f8c8d',
+  liveRed: '#ff3b3b',
+  highlight: '#f39c12',
+  tabBarActive: 'limegreen',
+  tabBarInactive: 'gray',
 };
 
 export default colors;
+
