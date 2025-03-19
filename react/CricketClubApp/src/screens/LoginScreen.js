@@ -45,7 +45,7 @@ const LoginScreen = ({ navigation }) => {
     if (validate()) {
       // If validations pass, navigate or show alert
       Alert.alert('Success', 'Login Successful!');
-      navigation.navigate('Home');
+      navigation.navigate('MainTabs');
     }
   };
 

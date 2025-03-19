@@ -1,155 +1,147 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Carousel from 'react-native-snap-carousel';
 import colors from '../utils/colors';
+import { useNavigation } from '@react-navigation/native';
+import Swiper from 'react-native-swiper';
+import API from '../api/api'; // use API data source
 
-const bannerData = [
-  { id: 1, image: require('../assets/images/banner1.png') },
-  { id: 1, image: require('../assets/images/banner1.png') },
-  { id: 1, image: require('../assets/images/banner1.png') },
-];
+const { width: screenWidth } = Dimensions.get('window');
 
-const BannerCarousel = () => (
-  <Carousel
-    data={bannerData}
-    renderItem={({ item }) => (
-      <Image source={item.image} style={styles.bannerImage} resizeMode="cover" />
-    )}
-    sliderWidth={400}
-    itemWidth={350}
-    autoplay
-    loop
-  />
-);
+const HomeScreen = () => {
+  const navigation = useNavigation();
+  const bannerImages = API.banners;
+  const liveMatches = API.liveMatches;
+  const clubInfo = API.clubInfo;
 
-const LiveMatchesSection = () => (
-  <View style={styles.sectionContainer}>
-    <Text style={styles.sectionTitle}>Live Matches</Text>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      {[1, 2, 3].map((item) => (
-        <View key={item} style={styles.liveCard}>
-          <Text style={styles.liveCardText}>Match {item}</Text>
-          <Text style={styles.liveCardSubText}>MI vs RCB - Live</Text>
-        </View>
-      ))}
-    </ScrollView>
-  </View>
-);
-
-const ClubInfoSection = () => (
-  <View style={styles.clubInfoContainer}>
-    <Text style={styles.sectionTitle}>About The Club</Text>
-    <Text style={styles.clubInfoText}>
-      RCC is a premier cricket club known for nurturing talent and hosting exciting matches.
-    </Text>
-  </View>
-);
-
-const HomeScreen = () => (
-  <LinearGradient
-    colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-    style={styles.container}
-  >
-    <ScrollView>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>RCC Club</Text>
-        <TouchableOpacity>
-          <Icon name="person-circle-outline" size={30} color={colors.textWhite} />
-        </TouchableOpacity>
-      </View>
-
-      <BannerCarousel />
-      <LiveMatchesSection />
-      <ClubInfoSection />
-    </ScrollView>
-  </LinearGradient>
-);
-
-const Tab = createBottomTabNavigator();
-
-export default function MainNavigation() {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName;
-          if (route.name === 'Home') iconName = 'home-outline';
-          else if (route.name === 'Scorecard') iconName = 'stats-chart-outline';
-          else if (route.name === 'Schedule') iconName = 'calendar-outline';
-          else if (route.name === 'Events') iconName = 'trophy-outline';
+    <LinearGradient colors={[colors.primaryGradientStart, colors.primaryGradientEnd]} style={styles.container}>
+      <ScrollView>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>RCC Cricket Club</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+            <Icon name="person-circle-outline" size={32} color={colors.textWhite} />
+          </TouchableOpacity>
+        </View>
 
-          return <Icon name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: colors.buttonBackground,
-        tabBarInactiveTintColor: 'gray',
-        headerShown: false,
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Scorecard" component={HomeScreen} />
-      <Tab.Screen name="Schedule" component={HomeScreen} />
-      <Tab.Screen name="Events" component={HomeScreen} />
-    </Tab.Navigator>
+        <View style={styles.bannerContainer}>
+          <Swiper autoplay showsPagination>
+            {bannerImages.map((img, index) => (
+              <View key={index} style={styles.bannerSlide}>
+                <Image source={img} style={styles.bannerImage} resizeMode="cover" />
+              </View>
+            ))}
+          </Swiper>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Live Matches</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {API.liveMatches.map((match) => (
+              <TouchableOpacity
+                key={match.id}
+                style={styles.liveMatchCard}
+                onPress={() => navigation.navigate('MatchDetail', { matchId: match.matchId })}
+              >
+                <View style={styles.teamsRow}>
+                  <Text style={styles.vsText}>{match.team1.name} vs {match.team2.name}</Text>
+                </View>
+                <Text style={styles.scoreText}>{match.score}</Text>
+                <Text style={styles.statusText}>{match.status}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About The Club</Text>
+          <Text style={styles.clubInfoText}>{clubInfo}</Text>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
-    padding: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 20,
   },
   headerTitle: {
-    fontSize: 26,
     color: colors.textWhite,
+    fontSize: 22,
     fontWeight: 'bold',
   },
-  bannerImage: {
-    height: 180,
-    borderRadius: 12,
-    marginVertical: 10,
+  bannerContainer: {
+    width: screenWidth,
+    height: 220,
   },
-  sectionContainer: {
-    marginVertical: 20,
+  bannerSlide: {
+    marginHorizontal: 15,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  bannerImage: {
+    width: '100%',
+    height: 200,
+  },
+  section: {
     paddingHorizontal: 15,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 20,
     color: colors.textWhite,
+    fontSize: 20,
     marginBottom: 10,
   },
-  liveCard: {
-    width: 150,
-    height: 80,
-    backgroundColor: '#fff3',
+  liveMatchCard: {
+    width: 180,
+    backgroundColor: colors.textPrimary,
     borderRadius: 12,
+    padding: 10,
     marginRight: 12,
-    justifyContent: 'center',
+    //shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  teamsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
+    marginBottom: 8,
   },
-  liveCardText: {
+  teamLogo: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  vsText: {
     color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
+  },
+  scoreText: {
+    color: '#fff',
     fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'center',
   },
-  liveCardSubText: {
-    color: '#ddd',
+  statusText: {
+    color: colors.highlight,
     fontSize: 12,
-  },
-  clubInfoContainer: {
-    paddingHorizontal: 15,
-    marginBottom: 40,
+    textAlign: 'center',
+    marginTop: 4,
   },
   clubInfoText: {
-    color: '#fff',
+    color: colors.textWhite,
     fontSize: 14,
-    marginTop: 8,
   },
 });
+
+export default HomeScreen;
