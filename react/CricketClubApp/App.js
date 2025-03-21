@@ -1,9 +1,13 @@
 import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Navigation from './src/navigation/Navigation'; // adjust path if needed
 
 const App = () => {
-  console.log('Loading screens...');
-  return <Navigation />;
+  return (
+    <SafeAreaProvider>
+      <Navigation />
+    </SafeAreaProvider>
+  );
 };
 
 export default App;

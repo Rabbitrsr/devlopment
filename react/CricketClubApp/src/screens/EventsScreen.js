@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../utils/colors';
 import API from '../api/api';
 
 const EventsScreen = () => {
   return (
+    <SafeAreaView style={styles.container}>
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>Upcoming Tournaments</Text>
       {API.events.map((event) => (
@@ -19,6 +21,7 @@ const EventsScreen = () => {
         </View>
       ))}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

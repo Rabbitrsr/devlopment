@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../utils/colors';
 import API from '../api/api';
 
@@ -8,7 +9,8 @@ const MatchDetailScreen = ({ route }) => {
   const matchData = API.matchDetails[matchId];
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+    <ScrollView >
       <Text style={styles.matchSummary}>{matchData.matchSummary}</Text>
 
       {matchData.innings.map((inning, index) => (
@@ -57,6 +59,7 @@ const MatchDetailScreen = ({ route }) => {
         </View>
       ))}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

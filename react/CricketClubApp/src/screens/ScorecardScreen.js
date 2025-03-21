@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../utils/colors';
 import API from '../api/api';
 import { useNavigation } from '@react-navigation/native';
@@ -8,7 +9,8 @@ const ScorecardScreen = () => {
   const navigation = useNavigation();
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+    <ScrollView >
       <Text style={styles.sectionTitle}>Recent Matches</Text>
       {API.recentMatches.map((match) => (
         <TouchableOpacity
@@ -23,6 +25,7 @@ const ScorecardScreen = () => {
       
       ))}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

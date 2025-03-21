@@ -5,13 +5,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './../screens/LoginScreen';
 import RegisterScreen from './../screens/RegisterScreen';
 import ForgetPasswordScreen from './../screens/ForgetPasswordScreen';
-import BottomTabNavigation from './BottomTabNavigation';
 import MatchDetailScreen from './../screens/MatchDetailScreen';
-
 import MatchPlayersScreen from './../screens/MatchPlayersScreen';
-
-
-
+import BottomTabNavigation from './BottomTabNavigation';
+import AdminNavigation from './AdminNavigation'; 
 
 const Stack = createStackNavigator();
 
@@ -22,12 +19,10 @@ const Navigation = () => {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
-        
-        {/* After login, this will show bottom tabs */}
-        <Stack.Screen name="MainTabs" component={BottomTabNavigation} />
-
         <Stack.Screen name="MatchDetail" component={MatchDetailScreen} />
         <Stack.Screen name="MatchPlayers" component={MatchPlayersScreen} />
+        <Stack.Screen name="MainTabs" component={BottomTabNavigation} />
+        <Stack.Screen name="AdminTabs" component={AdminNavigation} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );

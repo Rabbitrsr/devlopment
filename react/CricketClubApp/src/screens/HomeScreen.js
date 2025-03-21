@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+
+import { StatusBar,View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+import {SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/Ionicons';
 import colors from '../utils/colors';
+import responsive from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 import API from '../api/api'; // use API data source
@@ -16,12 +18,15 @@ const HomeScreen = () => {
   const clubInfo = API.clubInfo;
 
   return (
-    <LinearGradient colors={[colors.primaryGradientStart, colors.primaryGradientEnd]} style={styles.container}>
+    
+  <LinearGradient colors={[colors.primaryGradientStart, colors.primaryGradientEnd]} style={styles.container}>
+   <SafeAreaView style={styles.safeArea}>
+   <StatusBar barStyle="light-content" />
       <ScrollView>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>RCC Cricket Club</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-            <Icon name="person-circle-outline" size={32} color={colors.textWhite} />
+          <Image source={require('../assets/images/rcb.png')} style={styles.profileimage} />
           </TouchableOpacity>
         </View>
 
@@ -38,7 +43,7 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Live Matches</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {API.liveMatches.map((match) => (
+            {liveMatches.map((match) => (
               <TouchableOpacity
                 key={match.id}
                 style={styles.liveMatchCard}
@@ -60,22 +65,32 @@ const HomeScreen = () => {
           <Text style={styles.clubInfoText}>{clubInfo}</Text>
         </View>
       </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
+    
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  
+  container: { 
+    flex: 1 ,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingVertical: responsive.verticalScale(15),
+    paddingHorizontal: responsive.scale(15),
   },
   headerTitle: {
     color: colors.textWhite,
-    fontSize: 22,
+    fontSize: responsive.responsiveFont(20),
     fontWeight: 'bold',
+  },
+  profileimage :{
+    height: 32,
+    width: 32,
   },
   bannerContainer: {
     width: screenWidth,

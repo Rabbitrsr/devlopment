@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../utils/colors';
 
 const MatchPlayersScreen = ({ route }) => {
   const { match } = route.params;
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+    <ScrollView >
       <Text style={styles.header}>{match.team1.name} Squad</Text>
       {match.team1.players.map((player, index) => (
         <Text key={index} style={styles.playerName}>{player}</Text>
@@ -17,6 +19,7 @@ const MatchPlayersScreen = ({ route }) => {
         <Text key={index} style={styles.playerName}>{player}</Text>
       ))}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

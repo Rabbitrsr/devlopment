@@ -41,13 +41,21 @@ const LoginScreen = ({ navigation }) => {
     return valid;
   };
 
+
   const handleLogin = () => {
     if (validate()) {
-      // If validations pass, navigate or show alert
-      Alert.alert('Success', 'Login Successful!');
-      navigation.navigate('MainTabs');
+      // Example: You might get role from backend, using dummy logic for now:
+      const userRole = email === 'admin@rcc.com' ? 'admin' : 'user';
+    
+      if (userRole === 'admin') {
+        navigation.replace('AdminTabs'); // navigate to admin stack
+      } else {
+        navigation.replace('MainTabs');  // navigate to user bottom tabs
+      }
     }
   };
+  
+  
 
   return (
     <LinearGradient
