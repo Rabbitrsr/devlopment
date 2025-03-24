@@ -1,43 +1,111 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import HttpService from '../services/httpService';
+import api, { API_BASE_URL }  from '../services/api';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 import colors from '../utils/colors';
-import API from '../api/api';
+
+import { useFocusEffect } from '@react-navigation/native';
 
 const EventsScreen = () => {
+  const [tournaments, setTournaments] = useState([]);
+  const navigation = useNavigation();
+
+  const fetchTournaments = useCallback(async () => {
+    try {
+      const response = await HttpService.get(api.GET_TOURNAMENTS);
+      setTournaments(response);
+    } catch (err) {
+      console.log('Fetch error:', err);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTournaments();   // ✅ refreshes automatically every time screen focuses
+    }, [fetchTournaments])
+  );
+
+  const handleDelete = (id) => {
+    Alert.alert('Confirm Delete', 'Are you sure you want to delete this tournament?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await HttpService.delete(`${api.DELETE_TOURNAMENT}/${id}`);
+            fetchTournaments();
+            Alert.alert('Deleted', 'Tournament deleted successfully');
+          } catch (err) {
+            Alert.alert('Error', err.message || 'Something went wrong');
+          }
+        },
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
+  const renderTournament = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate('ManageTournamentScreen', { tournamentData: item })
+      }
+    >
+      <Image
+        source={{ uri: `${API_BASE_URL}${item.banner_url}` }}
+        style={styles.banner}
+      />
+      <View style={styles.cardContent}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.place}>📍 {item.place}</Text>
+        <Text style={styles.date}>Start: {new Date(item.start_date).toDateString()}</Text>
+      </View>
+      <TouchableOpacity style={styles.deleteIcon} onPress={() => handleDelete(item.id)}>
+        <Icon name="trash-outline" size={20} color="red" />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
-    <ScrollView style={styles.container}>
-      <Text style={styles.sectionTitle}>Upcoming Tournaments</Text>
-      {API.events.map((event) => (
-        <View key={event.id} style={styles.eventCard}>
-          <Image source={event.banner} style={styles.bannerImage} resizeMode="cover" />
-          <View style={styles.eventInfo}>
-            <Text style={styles.title}>{event.title}</Text>
-            <Text style={styles.text}>📍 {event.place}</Text>
-            <Text style={styles.text}>📅 {event.date}</Text>
-            <Text style={styles.text}>💰 {event.fee}</Text>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-    </SafeAreaView>
+    <View style={{ flex: 1, backgroundColor: colors.primaryGradientEnd }}>
+      <FlatList
+        data={tournaments}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderTournament}
+        contentContainerStyle={{ padding: 10 }}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.primaryGradientEnd, padding: 15 },
-  sectionTitle: { fontSize: 20, color: colors.textWhite, marginBottom: 15 },
-  eventCard: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    marginBottom: 20,
+  card: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginBottom: 15,
     overflow: 'hidden',
+    position: 'relative',
   },
-  bannerImage: { width: '100%', height: 180 },
-  eventInfo: { padding: 12 },
-  title: { color: colors.textWhite, fontSize: 18, fontWeight: 'bold', marginBottom: 6 },
-  text: { color: '#ddd', fontSize: 14, marginVertical: 2 },
+  banner: { width: '100%', height: 150 },
+  cardContent: { padding: 10 },
+  title: { fontSize: 18, fontWeight: 'bold' },
+  place: { color: '#555', marginTop: 4 },
+  date: { color: '#888', marginTop: 2 },
+  deleteIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    padding: 4,
+    borderRadius: 20,
+    elevation: 2,
+  },
 });
 
 export default EventsScreen;

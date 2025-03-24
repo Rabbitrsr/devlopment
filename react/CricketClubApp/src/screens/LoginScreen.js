@@ -9,12 +9,16 @@ import {
   Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import colors from '../utils/colors'; // adjust path if needed
+import HttpService from '../services/httpService'
+import  api from '../services/api';
+
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@rcc.com');
+  const [password, setPassword] = useState('admin123');
   const [errors, setErrors] = useState({});
 
   const validate = () => {
@@ -42,21 +46,33 @@ const LoginScreen = ({ navigation }) => {
   };
 
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (validate()) {
-      // Example: You might get role from backend, using dummy logic for now:
-      const userRole = email === 'admin@rcc.com' ? 'admin' : 'user';
-    
-      if (userRole === 'admin') {
-        navigation.replace('AdminTabs'); // navigate to admin stack
-      } else {
-        navigation.replace('MainTabs');  // navigate to user bottom tabs
+      try {
+        const data = await HttpService.post(api.LOGIN,{
+          email,
+          password
+        });
+
+        // Store the JWT token securely in AsyncStorage
+        await AsyncStorage.setItem('authToken', data.token);
+
+        if (data.role === 'admin') {
+          navigation.replace('AdminTabs');
+        } else if (data.role === 'scorer') {
+          navigation.replace('AdminTabs'); // Or any screen for scorer
+        } else {
+          navigation.replace('MainTabs');
+        }
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        Alert.alert('Error', 'Something went wrong');
       }
     }
   };
   
   
-
   return (
     <LinearGradient
       colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}

@@ -13,10 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-const UpdateScoreScreen = () => {
+const UpdateScoreScreen = ({route}) => {
+
+  const { matchId, matchName } = route.params;
+  
   const [runs, setRuns] = useState(0);
   const [wickets, setWickets] = useState(0);
-  const [overs, setOvers] = useState('4.2');
+  const [overs, setOvers] = useState('0.0');
   const [currentOverBalls, setCurrentOverBalls] = useState([]); // holds each ball score
   const [striker, setStriker] = useState({ name: 'Samarth Desai', runs: 22, balls: 13 });
   const [nonStriker, setNonStriker] = useState({ name: 'Harit Manek', runs: 12, balls: 16 });
@@ -33,6 +36,7 @@ const UpdateScoreScreen = () => {
 
 
   const addBallToOver = (ballOutcome, isLegal = true) => {
+    
     setCurrentOverBalls(prevBalls => [...prevBalls, ballOutcome]);
   
     if (isLegal) {
