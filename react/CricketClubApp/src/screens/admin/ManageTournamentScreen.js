@@ -12,7 +12,7 @@ import ImagePickerModal from '../../components/ImagePickerModal';
 import { useFocusEffect } from '@react-navigation/native';
 
 const ManageTournamentScreen = ({ route, navigation }) => {
-    const { tournamentData, onUpdate  } = route.params || {};
+    const { tournamentData } = route.params || {};
 
     const [title, setTitle] = useState('');
     const [place, setPlace] = useState('');
@@ -21,30 +21,32 @@ const ManageTournamentScreen = ({ route, navigation }) => {
     const [entryFee, setEntryFee] = useState('');
     const [bannerImage, setBannerImage] = useState(null);
     const [pickerVisible, setPickerVisible] = useState(false);
-    const [loading, setLoading] = useState(false); // ✅ Add this
+    const [loading, setLoading] = useState(false);
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
 
   
     useEffect(() => {
-        if (tournamentData) {
-          console.log("Pre-filling data for edit");
-          setTitle(tournamentData.title);
-          setPlace(tournamentData.place);
-          setStartDate(new Date(tournamentData.start_date));
-          setEndDate(new Date(tournamentData.end_date));
-          setEntryFee(tournamentData.entry_fee);
-          setBannerImage(null);
-        } else {
-          console.log("Fresh open, resetting form");
-          setTitle('');
-          setPlace('');
-          setStartDate(null);
-          setEndDate(null);
-          setEntryFee('');
-          setBannerImage(null);
-        }
-      }, [tournamentData]);
+      if (tournamentData) {
+        console.log("Pre-filling data for edit");
+        setTitle(tournamentData.title);
+        setPlace(tournamentData.place);
+        setStartDate(new Date(tournamentData.start_date));
+        setEndDate(new Date(tournamentData.end_date));
+        setEntryFee(tournamentData.entry_fee);
+        setBannerImage(null);
+      }
+
+    }, []);
+
+    const resetForm = () => {
+      setTitle('');
+      setPlace('');
+      setStartDate(null);
+      setEndDate(null);
+      setEntryFee('');
+      setBannerImage(null);
+    };
       
 
   const handleSubmit = async () => {
@@ -72,15 +74,21 @@ const ManageTournamentScreen = ({ route, navigation }) => {
     try {
       if (tournamentData) {
         await HttpService.putMultipart(`${api.UPDATE_TOURNAMENT}/${tournamentData.id}`, formData);
+
         Alert.alert('Success', 'Tournament updated successfully');
-      } else {
+
+        navigation.goBack();
+      } 
+      else {
         await HttpService.postMultipart(api.ADD_TOURNAMENT, formData);
+
         Alert.alert('Success', 'Tournament added successfully');
+
+        resetForm();
+
+        navigation.navigate('Events');
       }
-      if (onUpdate) {
-        onUpdate();
-      }
-      navigation.goBack();
+    
     } catch (err) {
       Alert.alert('Error', err.message || 'Something went wrong');
     } finally {

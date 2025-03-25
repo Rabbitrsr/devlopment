@@ -6,12 +6,13 @@ const tournamentController = require('../controllers/tournamentController');
 
 router.post(
     '/addtournament',
+    tournamentController.uploadBanner,
     auth,
     [
         body('title').notEmpty(),
         body('place').notEmpty(),
-        body('startDate').isISO8601(),
-        body('endDate').isISO8601(),
+        body('start_date').isISO8601(),
+        body('end_date').isISO8601(),
     ],
     tournamentController.addTournament
 );

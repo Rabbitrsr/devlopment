@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import HttpService from '../services/httpService';
 import api, { API_BASE_URL }  from '../services/api';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -73,18 +74,22 @@ const EventsScreen = () => {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.primaryGradientEnd }}>
-      <FlatList
-        data={tournaments}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderTournament}
-        contentContainerStyle={{ padding: 10 }}
-      />
-    </View>
+     <SafeAreaView style={styles.safeArea}>
+      
+      <View style={{ flex: 1, backgroundColor: colors.primaryGradientEnd }}>
+        <FlatList
+          data={tournaments}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderTournament}
+          contentContainerStyle={{ padding: 10 }}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: colors.primaryGradientEnd, },
   card: {
     backgroundColor: '#f9f9f9',
     borderRadius: 10,

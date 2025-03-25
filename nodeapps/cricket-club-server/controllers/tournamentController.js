@@ -18,6 +18,7 @@ exports.uploadBanner = upload.single('banner');
 
 // Add Tournament API
 exports.addTournament = async (req, res) => {
+    console.log(req.json);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
