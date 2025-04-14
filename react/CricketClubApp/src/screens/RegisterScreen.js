@@ -11,7 +11,9 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import colors from '../utils/colors'; // adjust path based on your folder structure
+import HttpService from '../services/httpService';
+import api from '../services/api';
+import colors from '../utils/colors';
 
 const RegisterScreen = ({ navigation }) => {
   const [fullname, setFullname] = useState('');
@@ -59,11 +61,28 @@ const RegisterScreen = ({ navigation }) => {
     return valid;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (validate()) {
-      Alert.alert('Success', 'Account created successfully!');
-      // You can proceed with API call or navigation here
-      navigation.navigate('Login');
+
+      try
+      {
+        const data = await HttpService.post(api.REGISTER_USER,{
+          "full_name" : fullname,
+          "email" : email,
+          "mobile" : mobNo,
+          "password" : password
+        });
+
+        Alert.alert('Success', 'Account created successfully!');
+        // You can proceed with API call or navigation here
+        navigation.navigate('Login');
+        
+      }
+      catch (error) {
+          console.error('Login error:', error);
+          Alert.alert('Error', 'Something went wrong');
+      }
+      
     }
   };
 

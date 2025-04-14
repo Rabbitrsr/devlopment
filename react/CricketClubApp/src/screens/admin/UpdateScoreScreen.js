@@ -13,9 +13,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-const UpdateScoreScreen = ({route}) => {
+const UpdateScoreScreen = ({route, navigation}) => {
 
-  const { matchId, matchName } = route.params;
+  const { matchId, teamId1, teamId2} = route.params;
+
+  alert(matchId)
   
   const [runs, setRuns] = useState(0);
   const [wickets, setWickets] = useState(0);

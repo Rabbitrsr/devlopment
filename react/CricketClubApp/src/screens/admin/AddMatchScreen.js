@@ -5,8 +5,8 @@ import { ScrollView,
   Platform 
  } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Dropdown } from 'react-native-element-dropdown';
 import HttpService from '../../services/httpService';
 import api from '../../services/api';
 import colors from '../../utils/colors';
@@ -26,7 +26,7 @@ const AddMatchScreen = () => {
   const fetchTournaments = async () => {
     try {
       const data = await HttpService.get(api.GET_TOURNAMENTS);
-      setTournaments(data);
+      setTournaments(data.map(item => ({ label: item.title, value: item.id })));
     } catch (err) {
       Alert.alert('Error', 'Failed to load tournaments');
     }
@@ -35,7 +35,7 @@ const AddMatchScreen = () => {
   const fetchTeams = async () => {
     try {
       const data = await HttpService.get(api.GET_TEAMS);
-      setTeams(data);
+      setTeams(data.map(team => ({ label: team.name, value: team.id })));
     } catch (err) {
       Alert.alert('Error', 'Failed to load teams');
     }
@@ -51,7 +51,7 @@ const AddMatchScreen = () => {
       if (Platform.OS === 'android') {
         setMatchDate(selectedDate);
         setShowDatePicker(false);
-        setShowTimePicker(true); // then show time picker
+        setShowTimePicker(true);
       } else {
         setMatchDate(selectedDate);
         setShowDatePicker(false);
@@ -81,9 +81,9 @@ const AddMatchScreen = () => {
     try {
       await HttpService.post(api.ADD_MATCH, {
         tournamentId,
-        team1Id,
-        team2Id,
-        matchDate: matchDate.toISOString(),
+        team1_id:team1Id,
+        team2_id:team2Id,
+        match_date: matchDate.toISOString(),
         venue,
       });
       Alert.alert('Success', 'Match scheduled successfully');
@@ -103,34 +103,43 @@ const AddMatchScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.label}>Select Tournament</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker selectedValue={tournamentId} onValueChange={setTournamentId} dropdownIconColor="#fff">
-            <Picker.Item label="Select Tournament" value="" />
-            {tournaments.map((t) => (
-              <Picker.Item key={t.id} label={t.title} value={t.id} />
-            ))}
-          </Picker>
-        </View>
+        <Dropdown
+          style={styles.dropdown}
+          containerStyle={styles.dropdowncontainerStyle}
+          placeholderStyle={styles.placeholderText}
+          data={tournaments}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Tournament"
+          value={tournamentId}
+          onChange={item => setTournamentId(item.value)}
+        />
 
         <Text style={styles.label}>Team 1</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker selectedValue={team1Id} onValueChange={setTeam1Id} dropdownIconColor="#fff">
-            <Picker.Item label="Select Team 1" value="" />
-            {teams.map((team) => (
-              <Picker.Item key={team.id} label={team.name} value={team.id} />
-            ))}
-          </Picker>
-        </View>
+        <Dropdown
+          style={styles.dropdown}
+          containerStyle={styles.dropdowncontainerStyle}
+          placeholderStyle={styles.placeholderText}
+          data={teams}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Team 1"
+          value={team1Id}
+          onChange={item => setTeam1Id(item.value)}
+        />
 
         <Text style={styles.label}>Team 2</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker selectedValue={team2Id} onValueChange={setTeam2Id} dropdownIconColor="#fff">
-            <Picker.Item label="Select Team 2" value="" />
-            {teams.map((team) => (
-              <Picker.Item key={team.id} label={team.name} value={team.id} />
-            ))}
-          </Picker>
-        </View>
+        <Dropdown
+          style={styles.dropdown}
+          containerStyle={styles.dropdowncontainerStyle}
+          placeholderStyle={styles.placeholderText}
+          data={teams}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Team 2"
+          value={team2Id}
+          onChange={item => setTeam2Id(item.value)}
+        />
 
         <Text style={styles.label}>Match Date & Time</Text>
         <TouchableOpacity style={styles.datePicker} onPress={() => setShowDatePicker(true)}>
@@ -156,7 +165,12 @@ const AddMatchScreen = () => {
         )}
 
         <Text style={styles.label}>Venue</Text>
-        <TextInput style={styles.input} value={venue} onChangeText={setVenue} placeholder="Venue" placeholderTextColor="#ccc" />
+        <TextInput 
+        style={styles.input} 
+        value={venue}
+        onChangeText={setVenue}
+        placeholder="Venue"
+        placeholderTextColor={styles.placeholderText.color}  />
 
         <TouchableOpacity style={styles.button} onPress={handleAddMatch} disabled={loading}>
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Add Match</Text>}
@@ -169,28 +183,46 @@ const AddMatchScreen = () => {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.primaryGradientEnd },
   container: { padding: 20 },
-  label: { color: colors.textWhite, marginBottom: 5, fontSize: 16, fontWeight: '600' },
-  pickerWrapper: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  label: { 
+     color: colors.textWhite,
+     marginBottom: 5, 
+     borderRadius: 10,
+     fontSize: 16, 
+     fontWeight: '600' 
+  },
+  dropdown: { 
+    height: 50, 
+    paddingHorizontal: 10, 
+    backgroundColor: colors.dropdownbackground,
     borderRadius: 10,
     marginBottom: 15,
+
+  },
+  dropdowncontainerStyle:{
+     borderRadius: 10,
+  },
+  placeholderText: {
+    color: '#fff',
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: colors.dropdownbackground,
     borderRadius: 10,
     paddingHorizontal: 12,
-    color: colors.textWhite,
+    color: colors.inputlabel,
     marginBottom: 15,
     height: 50,
     fontSize: 16,
   },
   datePicker: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: colors.dropdownbackground,
     borderRadius: 10,
     padding: 12,
     marginBottom: 15,
   },
-  dateText: { color: '#fff', fontSize: 16 },
+  dateText: { 
+    color: colors.inputlabel, 
+    fontSize: 16 
+  },
   button: {
     backgroundColor: colors.buttonBackground,
     padding: 15,
@@ -198,7 +230,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  buttonText: {
+    color: colors.inputlabel, 
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
 });
 
 export default AddMatchScreen;

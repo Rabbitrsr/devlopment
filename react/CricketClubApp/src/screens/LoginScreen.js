@@ -17,8 +17,8 @@ import  api from '../services/api';
 
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('admin@rcc.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('test@test.com');
+  const [password, setPassword] = useState('test123');
   const [errors, setErrors] = useState({});
 
   const validate = () => {
@@ -49,13 +49,14 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     if (validate()) {
       try {
-        const data = await HttpService.post(api.LOGIN,{
+        const data = await HttpService.post(api.LOGIN_USER,{
           email,
           password
         });
 
         // Store the JWT token securely in AsyncStorage
         await AsyncStorage.setItem('authToken', data.token);
+        await AsyncStorage.setItem('userid', String(data.id));
 
         if (data.role === 'admin') {
           navigation.replace('AdminTabs');

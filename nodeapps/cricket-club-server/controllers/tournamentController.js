@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator');
 const db = require('../config/db');
 const multer = require('multer');
-const path = require('path');
 
 // Multer setup for banner upload
 const storage = multer.diskStorage({

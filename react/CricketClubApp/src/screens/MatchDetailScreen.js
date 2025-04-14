@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../utils/colors';
-import API from '../api/api';
+
 
 const MatchDetailScreen = ({ route }) => {
   const { matchId } = route.params;
-  const matchData = API.matchDetails[matchId];
+  const matchData = "";
 
   return (
     <SafeAreaView style={styles.container}>

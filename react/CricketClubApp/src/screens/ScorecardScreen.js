@@ -2,11 +2,27 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import {SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../utils/colors';
-import API from '../api/api';
 import { useNavigation } from '@react-navigation/native';
 
 const ScorecardScreen = () => {
   const navigation = useNavigation();
+
+  const API = {
+    recentMatches : [
+      {
+        id: 1,
+        team1: { name: 'MI', score: '158/4' },
+        team2: { name: 'RCB', score: '142/6' },
+        winner: 'MI won by 16 runs',
+      },
+      {
+        id: 2,
+        team1: { name: 'CSK', score: '175/5' },
+        team2: { name: 'KKR', score: '168/9' },
+        winner: 'CSK won by 7 runs',
+      },
+    ]
+  }
 
   return (
     <SafeAreaView style={styles.container}>

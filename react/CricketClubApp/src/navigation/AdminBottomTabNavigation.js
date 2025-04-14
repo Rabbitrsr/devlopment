@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
-import AddTeamScreen from '../screens/admin/AddTeamScreen';
+import ManageTeamScreen from '../screens/admin/ManageTeamScreen';
 import AddPlayerScreen from '../screens/admin/AddPlayerScreen';
 import AddMatchScreen from '../screens/admin/AddMatchScreen';
 import MatchListScreen from '../screens/admin/MatchListScreen';
@@ -22,7 +22,7 @@ const AdminBottomTabNavigation = () => {
           let iconName = 'home';
           if (route.name === 'Dashboard') iconName = 'grid-outline';
           else if (route.name === 'ManageTournament') iconName = 'trophy-outline';
-          else if (route.name === 'AddTeam') iconName = 'people-outline';
+          else if (route.name === 'ManageTeam') iconName = 'people-outline';
           else if (route.name === 'AddPlayer') iconName = 'person-add-outline';
           else if (route.name === 'AddMatch') iconName = 'calendar-outline';
           else if (route.name === 'MatchList') iconName = 'stats-chart-outline';
@@ -37,7 +37,7 @@ const AdminBottomTabNavigation = () => {
         component={ManageTournamentStackNavigator} // ✅ use stack here
         options={{ tabBarLabel: 'Add Tournament' }}
       />
-      <Tab.Screen name="AddTeam" component={AddTeamScreen} />
+      <Tab.Screen name="ManageTeam" component={ManageTeamScreen} />
       <Tab.Screen name="AddPlayer" component={AddPlayerScreen} />
       <Tab.Screen name="AddMatch" component={AddMatchScreen} />
       <Tab.Screen name="MatchList" component={MatchListScreen} />
