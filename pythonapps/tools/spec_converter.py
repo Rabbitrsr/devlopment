@@ -1,156 +1,165 @@
 """
-Excel to Specification Files Converter
-Author: Assistant
-Date: 2023-08-02
+Flexible Excel Specifications Extractor (JSON Version with Array Format)
+
+This script reads an Excel sheet and writes each parameter's data to a separate JSON file,
+where each model's spec value is always stored as a list, even if it has only one item.
 """
 
 import pandas as pd
 import argparse
 import logging
 import re
+import json
 from pathlib import Path
 
-# Configure logging
+# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-class SpecsConverter:
-    def __init__(self, input_file, sheet_name, output_dir):
-        self.input_file = Path(input_file)
+
+class FlexibleExcelExtractor:
+    """Extracts specifications from Excel with flexible column structure"""
+
+    def __init__(self, excel_file, sheet_name, output_folder, parameter_col=None, skip_cols=1):
+        self.excel_file = Path(excel_file)
         self.sheet_name = sheet_name
-        self.output_dir = Path(output_dir)
-        self.df = None
+        self.output_folder = Path(output_folder)
+        self.parameter_col = parameter_col
+        self.skip_cols = skip_cols
+        self.data = None
 
-        # Validate paths
-        if not self.input_file.exists():
-            raise FileNotFoundError(f"Input file not found: {self.input_file}")
+        if not self.excel_file.exists():
+            raise FileNotFoundError(f"Excel file not found: {self.excel_file}")
 
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.output_folder.mkdir(parents=True, exist_ok=True)
 
-    def clean_filename(self, name):
-        """Sanitize filename by removing special characters"""
-        return re.sub(r'[^\w\s-]', '', name).strip().replace(' ', '_')
+    def make_safe_filename(self, text):
+        """Sanitize filename"""
+        return re.sub(r'[^\w\s-]', '', text).strip().replace(' ', '_')
 
-    def load_data(self):
-        """Load and validate Excel data"""
+    def read_excel(self):
+        """Read the Excel file and load the sheet"""
         try:
-            self.df = pd.read_excel(
-                self.input_file,
+            self.data = pd.read_excel(
+                self.excel_file,
                 sheet_name=self.sheet_name,
                 header=0,
                 keep_default_na=False
             )
 
-            # Validate required columns
-            required_columns = ['S.No', 'PARAMETER']
-            if not all(col in self.df.columns for col in required_columns):
-                missing = set(required_columns) - set(self.df.columns)
-                raise ValueError(f"Missing required columns: {missing}")
+            if self.parameter_col is None:
+                if len(self.data.columns) < 2:
+                    raise ValueError("Not enough columns in the Excel file")
+                self.parameter_col = self.data.columns[1]
+                logger.info(f"Auto-selected parameter column: {self.parameter_col}")
 
-            logger.info(f"Successfully loaded data from {self.input_file}")
+            if self.parameter_col not in self.data.columns:
+                raise ValueError(f"Parameter column '{self.parameter_col}' not found.")
+
+            logger.info(f"Loaded sheet '{self.sheet_name}' from {self.excel_file}")
+            logger.info(f"Detected {len(self.data.columns) - self.skip_cols - 1} model columns")
 
         except Exception as e:
-            logger.error(f"Error loading Excel file: {e}")
+            logger.error(f"Failed to read Excel file: {e}")
             raise
 
-    def process_parameter(self, parameter_row):
-        """Process a single parameter row"""
+    def process_row(self, row):
+        """Process a single parameter row and write it as JSON"""
         try:
-            parameter_name = parameter_row['PARAMETER'].strip()
-            if not parameter_name or parameter_name == 'PARAMETER':
-                return  # Skip header row
+            parameter_name = str(row[self.parameter_col]).strip()
+            if not parameter_name or parameter_name.lower() == self.parameter_col.lower():
+                return
 
             logger.info(f"Processing parameter: {parameter_name}")
 
-            output_lines = []
+            model_spec_map = {}
 
-            # Iterate through models (columns)
-            for model in self.df.columns[2:]:  # Skip S.No and PARAMETER columns
-                spec = parameter_row[model]
-                if not spec or str(spec).lower() == 'nan':
-                    continue  # Skip empty specs
+            for col_idx, model in enumerate(self.data.columns):
+                if col_idx <= self.skip_cols or model == self.parameter_col:
+                    continue
 
-                # Format model entry
-                output_lines.append(f"Model Name : {model}")
-                output_lines.append(f"{model} {parameter_name}:")
+                spec_value = row[model]
+                if not spec_value or str(spec_value).lower() == 'nan':
+                    continue
 
-                lines = str(spec).split('\n')
-                lines = [line.strip() for line in lines if line.strip()]  # Clean and skip empty lines
+                # Always convert spec value to a list (even if only one item)
+                lines = str(spec_value).split('\n')
+                lines = [line.strip() for line in lines if line.strip()]
+                model_spec_map[model] = lines
 
-                if lines:
-                    first_line = lines[0]
-                    if len(lines) == 1:
-                        output_lines.append(f"- {parameter_name} {first_line}")
-                    else:
-                        for line in lines[1:]:
-                            output_lines.append(f"- {first_line} {line}")
+            if model_spec_map:
+                filename = self.make_safe_filename(parameter_name) + ".json"
+                output_file = self.output_folder / filename
 
-                output_lines.append("##end##")  # Add empty line between models
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    json.dump({parameter_name: model_spec_map}, f, indent=2, ensure_ascii=False)
 
-            # Generate output file
-            if output_lines:
-                filename = self.clean_filename(parameter_name) + ".txt"
-                output_path = self.output_dir / filename
-
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    f.write('\n'.join(output_lines))
-
-                logger.info(f"Created file: {output_path}")
+                logger.info(f"Created JSON file: {output_file}")
 
         except Exception as e:
-            logger.error(f"Error processing parameter {parameter_name}: {e}")
+            logger.error(f"Error processing row for parameter '{parameter_name}': {e}")
             raise
 
-    def convert_all(self):
-        """Convert all parameters in the sheet"""
+    def extract_all(self):
+        """Extract specs for all parameters in the sheet"""
         try:
-            self.load_data()
+            self.read_excel()
 
-            for _, row in self.df.iterrows():
-                self.process_parameter(row)
+            for _, row in self.data.iterrows():
+                self.process_row(row)
 
-            logger.info("Conversion completed successfully")
+            logger.info("✅ All parameters extracted to JSON successfully.")
 
         except Exception as e:
-            logger.error(f"Conversion failed: {e}")
+            logger.error(f"Extraction failed: {e}")
             raise
+
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert Excel specifications to text files"
+        description="Convert Excel spec sheet to JSON files per parameter (array format)"
     )
     parser.add_argument(
         '-i', '--input',
         required=True,
-        help="Path to input Excel file"
+        help="Path to the input Excel file"
     )
     parser.add_argument(
         '-s', '--sheet',
-        default="Master Comparison",
-        help="Sheet name to process (default: 'Master Comparison')"
+        default="Sheet1",
+        help="Sheet name (default: Sheet1)"
     )
     parser.add_argument(
         '-o', '--output',
-        default="specs_output",
-        help="Output directory (default: 'specs_output')"
+        default="spec_json",
+        help="Output folder for JSON files"
+    )
+    parser.add_argument(
+        '-p', '--parameter-column',
+        help="Name of the column containing parameter names"
+    )
+    parser.add_argument(
+        '-k', '--skip-columns',
+        type=int,
+        default=1,
+        help="Number of initial columns to skip (default: 1)"
     )
 
     args = parser.parse_args()
 
-    try:
-        converter = SpecsConverter(
-            input_file=args.input,
-            sheet_name=args.sheet,
-            output_dir=args.output
-        )
-        converter.convert_all()
+    extractor = FlexibleExcelExtractor(
+        excel_file=args.input,
+        sheet_name=args.sheet,
+        output_folder=args.output,
+        parameter_col=args.parameter_column,
+        skip_cols=args.skip_columns
+    )
 
-    except Exception as e:
-        logger.error(f"Fatal error: {e}")
-        exit(1)
+    extractor.extract_all()
+
 
 if __name__ == "__main__":
     main()

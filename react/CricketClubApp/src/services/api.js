@@ -29,6 +29,7 @@ const api = {
   GET_LIVE_MATCHES: `${API_BASE_URL}/api/match/getlivematches`,
   GET_MATCHES: `${API_BASE_URL}/api/match/getmatches`,
   GET_MATCHES_FROM_ID: `${API_BASE_URL}/api/match/getmatchesfromid`,
+  GET_MATCH_DETAILS: `${API_BASE_URL}/api/match/details`,
   UPDATE_MATCH: `${API_BASE_URL}/api/match/update`,
   DELETE_MATCH: `${API_BASE_URL}/api/match/delete`,
 

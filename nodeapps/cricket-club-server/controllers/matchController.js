@@ -98,7 +98,7 @@ exports.getLiveMatches = async (req, res) => {
     }
 };
 
-exports.getMatchesFromID = async (req, res) => {
+exports.getMatchFromID = async (req, res) => {
     try {
         const result = await db.query(
             `SELECT matches.*, 
@@ -117,6 +117,59 @@ exports.getMatchesFromID = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.getMatchDetails = async (req, res) => {
+    const { matchId } = req.params;
+
+    try {
+        // Get match + teams
+        const matchQuery = await db.query(
+            `SELECT m.id, m.result_text, t1.name AS team1_name, t2.name AS team2_name
+       FROM matches m
+       JOIN teams t1 ON m.team1_id = t1.id
+       JOIN teams t2 ON m.team2_id = t2.id
+       WHERE m.id = $1`,
+            [matchId]
+        );
+
+        if (matchQuery.rows.length === 0) {
+            return res.status(404).json({ message: 'Match not found' });
+        }
+
+        const match = matchQuery.rows[0];
+
+        // Get innings
+        const inningsQuery = await db.query(
+            `SELECT mi.*, t.name AS batting_team_name
+       FROM match_innings mi
+       JOIN teams t ON mi.batting_team_id = t.id
+       WHERE mi.match_id = $1
+       ORDER BY mi.id ASC`,
+            [matchId]
+        );
+
+        // You can expand this further to join batsmen and bowlers stats if stored in separate tables
+        const innings = inningsQuery.rows.map(inning => ({
+            battingTeam: inning.batting_team_name,
+            battingScore: `${inning.score} (${inning.overs})`,
+            fow: inning.fow_details,
+            batting: [],         // To be filled with real batsmen stats
+            bowlingAgainst: []   // To be filled with real bowler stats
+        }));
+
+        // Compose final response
+        const response = {
+            matchSummary: match.result_text,
+            innings
+        };
+
+        res.json(response);
+    } catch (err) {
+        console.error('Error getting match details:', err);
+        res.status(500).json({ message: 'Failed to fetch match details' });
+    }
+};
+
 
 exports.setupInningsState = async (req, res) => {
     const {

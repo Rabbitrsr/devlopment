@@ -5,7 +5,8 @@ const auth = require('../middleware/auth'); // Assuming you have an auth middlew
 
 router.post('/addmatch', auth, matchController.addMatch);
 router.get('/getmatches', auth, matchController.getMatches);
-router.get('/getmatchesfromid/:id', auth, matchController.getMatchesFromID);
+router.get('/getmatchesfromid/:id', auth, matchController.getMatchFromID);
+router.get('/details/:id', auth, matchController.getMatchDetails);
 router.get('/getlivematches', auth, matchController.getLiveMatches);
 router.get('/setupinningsstate',auth,matchController.setupInningsState)
 router.get("/status/:id", auth, matchController.getStatus)
